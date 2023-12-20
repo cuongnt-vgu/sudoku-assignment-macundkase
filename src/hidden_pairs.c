@@ -28,7 +28,6 @@ Find the number of unique values in a unit
 
     for (int i = 0; i < BOARD_SIZE; i++)
     {
-        if (p_cells[i]->num_candidates == 1) continue;
         
         int *candidates = get_candidates(p_cells[i]);
         for (int j = 0; j < p_cells[i]->num_candidates; j++)

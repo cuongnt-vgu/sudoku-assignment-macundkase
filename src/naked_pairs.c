@@ -6,28 +6,21 @@
 
 int check_naked_pairs(Cell **p_cells, int a, int b, int check_box)
 {
-    int count = 0;
-    for (int i = 0; i < BOARD_SIZE; i++)
+    for (int i = 0; i < BOARD_SIZE-1; i++)
     {
-        if(is_candidate(p_cells[i], a) && is_candidate(p_cells[i], b) && p_cells[i]->num_candidates == 2)
+        for (int j = i+1; j < BOARD_SIZE; j++)
         {
-            if (check_box)
+            if ((is_candidate(p_cells[i], a) && is_candidate(p_cells[i], b) && p_cells[i]->num_candidates == 2) &&
+                (is_candidate(p_cells[j], a) && is_candidate(p_cells[j], b) && p_cells[j]->num_candidates == 2))
             {
-                if (i >= 0 && i <= 2)
+                if (check_box)
                 {
-                    if(is_candidate(p_cells[i+3], a) && is_candidate(p_cells[i+3], b) && p_cells[i+3]->num_candidates == 2) continue;
-                    if(is_candidate(p_cells[i+6], a) && is_candidate(p_cells[i+6], b) && p_cells[i+6]->num_candidates == 2) continue;
+                    if (p_cells[i]->row_index == p_cells[j]->row_index || p_cells[i]->col_index == p_cells[j]->col_index) continue;
                 }
-                if (i == 0 || i == 3 || i == 6)
-                {
-                    if(is_candidate(p_cells[i+1], a) && is_candidate(p_cells[i+1], b) && p_cells[i+1]->num_candidates == 2) continue;
-                    if(is_candidate(p_cells[i+2], a) && is_candidate(p_cells[i+2], b) && p_cells[i+2]->num_candidates == 2) continue;
-                }
+                return 1;
             }
-            else count++;
         }
     }
-    if(count == 2) return 1;
     return 0;
 }
 
