@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "hidden_pairs.h"
-#include "sudoku.h"
+#include "sudoku.h"   
 
 int check_hidden_pairs(Cell **p_cells, int a, int b)
 {
@@ -65,21 +65,40 @@ Find cells containing hidden values
         {
             if (check_hidden_pairs(p_cells, probable_hidden_pairs[i], probable_hidden_pairs[j]))
             {
-                for(int k = 0; k < BOARD_SIZE; k++)
+                for(int k = 0; k < BOARD_SIZE-1; k++)
                 {
-                    if(is_candidate(p_cells[k], probable_hidden_pairs[i])) 
+                    for (int l = k+1; l < BOARD_SIZE; l++)
                     {
-                        HiddenPairs new_hidden_pair;
-                        new_hidden_pair.p_cell = p_cells[k];
-                        new_hidden_pair.value1 = probable_hidden_pairs[i];
-                        new_hidden_pair.value2 = probable_hidden_pairs[j];
-                        p_hidden_pairs[*p_counter] = new_hidden_pair;
-                        *p_counter += 1;
+                        if(is_candidate(p_cells[k], probable_hidden_pairs[i]) && is_candidate(p_cells[l], probable_hidden_pairs[i])) 
+                        {
+                            HiddenPairs new_hidden_pair;
+                            new_hidden_pair.p_cell_1 = p_cells[k];
+                            new_hidden_pair.p_cell_2 = p_cells[l];
+                            new_hidden_pair.value1 = probable_hidden_pairs[i];
+                            new_hidden_pair.value2 = probable_hidden_pairs[j];
+                            p_hidden_pairs[*p_counter] = new_hidden_pair;
+                            *p_counter += 1;
+                        }
                     }
                 }
             }
         }
     }
+}
+
+void unset_non_hidden_candidates(Cell* p_cell, int value1, int value2, int* is_over)
+{
+    int* candidate = get_candidates(p_cell);
+    int num_candidates = p_cell->num_candidates;
+    for(int j = 0; j < num_candidates; j++)
+    {
+        if (candidate[j] != value1 && candidate[j] != value2)
+        {
+            unset_candidate(p_cell, candidate[j]);
+            *is_over = 0;
+        }
+    }
+    free(candidate);
 }
 
 int hidden_pairs(SudokuBoard *p_board)
@@ -100,27 +119,21 @@ Output the number of hidden pairs in the board
                            &hidden_pair_counter);
     }
 
-    int over = 0;
+    int overlap = 0;
     for (int i = 0; i < hidden_pair_counter; i++)
     {
-        int is_over = 1;
-        Cell *p_cell = hidden_pairs[i].p_cell;
+        Cell *p_cell_1 = hidden_pairs[i].p_cell_1;
+        Cell *p_cell_2 = hidden_pairs[i].p_cell_2;
         int value1 = hidden_pairs[i].value1;
         int value2 = hidden_pairs[i].value2;
-        int* candidate = get_candidates(p_cell);
-        int num_candidates = p_cell->num_candidates;
-        for(int j = 0; j < num_candidates; j++)
-        {
-            if (candidate[j] != value1 && candidate[j] != value2)
-            {
-                unset_candidate(p_cell, candidate[j]);
-                is_over = 0;
-            }
-        }
-        over += is_over;
-        free(candidate);
+
+        int is_over = 1;
+        
+        unset_non_hidden_candidates(p_cell_1, value1, value2, &is_over);
+        unset_non_hidden_candidates(p_cell_2, value1, value2, &is_over);
+        overlap += is_over;
     }
 
-    return (hidden_pair_counter-over)/2;
+    return hidden_pair_counter-overlap;
 }
 

@@ -9,12 +9,7 @@ Find the number of unique values in a unit
 */
 {
     int num_hidden_values = 0;
-    int candidates_count[BOARD_SIZE];
-
-    for (int i = 0; i < BOARD_SIZE; i++)
-    {
-        candidates_count[i] = 0;
-    }
+    int candidates_count[BOARD_SIZE] = {0};
 
     for (int i = 0; i < BOARD_SIZE; i++)
     {
