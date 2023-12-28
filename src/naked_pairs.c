@@ -4,7 +4,7 @@
 #include "naked_pairs.h"
 #include "sudoku.h"
 
-int check_naked_pairs(Cell **p_cells, int a, int b, int check_box)
+int check_naked_pairs(Cell **p_cells, int a, int b)
 {
     for (int i = 0; i < BOARD_SIZE-1; i++)
     {
@@ -13,10 +13,6 @@ int check_naked_pairs(Cell **p_cells, int a, int b, int check_box)
             if ((is_candidate(p_cells[i], a) && is_candidate(p_cells[i], b) && p_cells[i]->num_candidates == 2) &&
                 (is_candidate(p_cells[j], a) && is_candidate(p_cells[j], b) && p_cells[j]->num_candidates == 2))
             {
-                if (check_box)
-                {
-                    if (p_cells[i]->row_index == p_cells[j]->row_index || p_cells[i]->col_index == p_cells[j]->col_index) continue;
-                }
                 return 1;
             }
         }
@@ -62,7 +58,7 @@ Find the number of unique values in a unit
 
 
 void find_naked_pair(Cell **p_cells, NakedPairs *p_naked_pairs,
-                        int *p_counter, int check_box)
+                        int *p_counter)
 /*
 Find cells containing naked values
 */
@@ -74,7 +70,7 @@ Find cells containing naked values
     {
         for(int j = i + 1; j < probable_count; j++)
         {
-            if (check_naked_pairs(p_cells, probable_naked_pairs[i], probable_naked_pairs[j], check_box))
+            if (check_naked_pairs(p_cells, probable_naked_pairs[i], probable_naked_pairs[j]))
             {
                 NakedPairs new_naked_pair;
                 new_naked_pair.p_cells = p_cells;
@@ -98,19 +94,25 @@ Output the number of naked pairs in the board
     for (int i = 0; i < BOARD_SIZE; i++)
     {
         find_naked_pair(p_board->p_rows[i], naked_pairs,
-                           &naked_pair_counter, 0);
+                           &naked_pair_counter);
         find_naked_pair(p_board->p_cols[i], naked_pairs,
-                           &naked_pair_counter, 0);
+                           &naked_pair_counter);
         find_naked_pair(p_board->p_boxes[i], naked_pairs,
-                           &naked_pair_counter, 1);
+                           &naked_pair_counter);
     }
 
-    // int over = 0;
+    int overlap = 0;
+    int solved_count = 0;
+    SolvedPairs solved_pairs[naked_pair_counter];
     for (int i = 0; i < naked_pair_counter; i++)
     {
         Cell **p_cells = naked_pairs[i].p_cells;
         int value1 = naked_pairs[i].value1;
         int value2 = naked_pairs[i].value2;
+
+        int count = 0;
+        int is_overlap = 0;
+        Cell* naked_p_cells[2];
         for(int j = 0; j < BOARD_SIZE; j++)
         {
             if(!(is_candidate(p_cells[j], value1) && is_candidate(p_cells[j], value2) && p_cells[j]->num_candidates == 2))
@@ -124,9 +126,22 @@ Output the number of naked pairs in the board
                     unset_candidate(p_cells[j], value2);
                 }
             } 
+            else naked_p_cells[count++] = p_cells[j];
         }
+        for (int k = 0; k < solved_count; k++)
+        {
+            if (solved_pairs[k].p_cell1 == naked_p_cells[0] && solved_pairs[k].p_cell2 == naked_p_cells[1]) is_overlap = 1;
+        }
+        if (!is_overlap)
+        {
+            SolvedPairs new_solved_pair;
+            new_solved_pair.p_cell1 = naked_p_cells[0];
+            new_solved_pair.p_cell2 = naked_p_cells[1];
+            solved_pairs[solved_count++] = new_solved_pair;
+        }
+        else overlap++;
     }
 
-    return naked_pair_counter;
+    return naked_pair_counter-overlap;
 }
 

@@ -138,6 +138,9 @@ Output the number of naked triples in the board
                            &naked_triple_counter, 1);
     }
 
+    int overlap = 0;
+    int solved_count = 0;
+    SolvedTriples solved_triples[naked_triple_counter];
     // int over = 0;
     for (int i = 0; i < naked_triple_counter; i++)
     {
@@ -145,6 +148,11 @@ Output the number of naked triples in the board
         int value1 = naked_triples[i].value1;
         int value2 = naked_triples[i].value2;
         int value3 = naked_triples[i].value3;
+
+        int count = 0;
+        int is_overlap = 0;
+        Cell* naked_p_cells[3];
+
         for(int j = 0; j < BOARD_SIZE; j++)
         {
             if (!check_naked_triples_cell(p_cells[j], value1, value2, value3))
@@ -162,7 +170,22 @@ Output the number of naked triples in the board
                     unset_candidate(p_cells[j], value3);
                 }
             } 
+            else naked_p_cells[count++] = p_cells[j];
         }
+        for (int k = 0; k < solved_count; k++)
+        {
+            if (solved_triples[k].p_cell1 == naked_p_cells[0] && solved_triples[k].p_cell2 == naked_p_cells[1] && 
+                solved_triples[k].p_cell3 == naked_p_cells[2]) is_overlap = 1;
+        }
+        if (!is_overlap)
+        {
+            SolvedTriples new_solved_triple;
+            new_solved_triple.p_cell1 = naked_p_cells[0];
+            new_solved_triple.p_cell2 = naked_p_cells[1];
+            new_solved_triple.p_cell3 = naked_p_cells[2];
+            solved_triples[solved_count++] = new_solved_triple;
+        }
+        else overlap++;
     }
 
     return naked_triple_counter;
